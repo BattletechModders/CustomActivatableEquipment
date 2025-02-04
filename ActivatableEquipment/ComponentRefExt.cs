@@ -101,7 +101,12 @@ namespace CustomActivatableEquipment {
       dest.statusEffects = src.statusEffects;
       dest.AbilityDefs = src.AbilityDefs == null ? null : new List<AbilityDef>(src.AbilityDefs);
       dest.additionalData = src.additionalData;
-      dest.ComponentTags = dest.ComponentTags == null? null : new TagSet(src.ComponentTags);      
+      dest.ComponentTags = dest.ComponentTags == null? null : new TagSet(src.ComponentTags);   
+      
+      // probably a better way of doing this would be to reflect and find all injected fields and then
+      // copy them over.
+      dest.ccCustoms = src.ccCustoms;
+      dest.ccFlags = src.ccFlags;
     }
     public static void CopyFromTo_AmmunitionBoxDef(AmmunitionBoxDef src, AmmunitionBoxDef dest) {
       CopyFromTo_MechComponentDef(src, dest);
