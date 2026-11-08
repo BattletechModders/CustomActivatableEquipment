@@ -1,4 +1,5 @@
 ﻿using CustomComponents;
+using CustomActivatableEquipment.AI;
 using HarmonyLib;
 using Newtonsoft.Json;
 using System;
@@ -227,7 +228,7 @@ namespace CustomActivatablePatches {
           int activatedRound = ActivatableComponent.getComponentActivedRound(component);
           int currentRound = __instance.Combat.TurnDirector.CurrentRound;
           Log.Debug?.Write(" " + component.defId + " not active " + __instance.CurrentHeat + "/" + activatable.AutoActivateOnHeat + " oncePerRound:" + activatable.ActivateOncePerRound + " actRound:" + activatedRound + " currentRound:" + currentRound + "\n");
-          if (activatable.ActivateOncePerRound && (activatedRound == currentRound)) { return; }
+          if (activatable.ActivateOncePerRound && (activatedRound == currentRound)) { continue; }
           if (activatable.AutoActivateOnOverheatLevel <= CustomActivatableEquipment.Core.Epsilon) {
             if (activatable.AutoActivateOnHeat > Core.Epsilon) {
               if (__instance.CurrentHeat >= activatable.AutoActivateOnHeat) {
@@ -873,8 +874,9 @@ namespace CustomActivatableEquipment {
         Log.Debug?.WL(1,"always fail");
       }
       if (testRoll) { if (roll < chance) { return false; } else { return true; }; };
-      if (component.isAIRollPassed()) {
-        component.setAIRollPassed(false);
+      AIComponent aiComponent = new AIComponent(component);
+      if (aiComponent.NextRollForcedToPass) {
+        aiComponent.NextRollForcedToPass = false;
         if (roll >= 0f) { roll = chance + 0.1f; };
       }
       Log.Debug?.WL(1,$"roll:{roll}");
@@ -1111,6 +1113,11 @@ namespace CustomActivatableEquipment {
       FailChance += (activatable.FailPilotingBase - component.parent.SkillPiloting) * activatable.FailPilotingMult;
       if (FailChance < 0f) { FailChance = 0f; };
       return FailChance;
+    }
+    public static float getActivationFailChance(MechComponent component) {
+      ActivatableComponent activatable = component.componentDef.GetComponent<ActivatableComponent>();
+      if (activatable == null) { return 0f; }
+      return activatable.AlwaysFail ? 1f : getEffectiveComponentFailChance(component);
     }
     public static void setComponentFailChance(MechComponent component, float chance) {
       ActivatableComponent activatable = component.componentDef.GetComponent<ActivatableComponent>();
