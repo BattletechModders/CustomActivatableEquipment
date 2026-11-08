@@ -1,4 +1,5 @@
 ﻿using CustomComponents;
+using CustomActivatableEquipment.AI;
 using HarmonyLib;
 using Newtonsoft.Json;
 using System;
@@ -18,6 +19,7 @@ using CustomActivatableEquipment;
 using CustomAmmoCategoriesPatches;
 using CustAmmoCategoriesPatches;
 using CustomActivatableEquipment.DamageHelpers;
+using IRBTModUtils.Logging;
 
 namespace CustomActivatablePatches {
   public static class InjurePilot_Check {
@@ -226,7 +228,7 @@ namespace CustomActivatablePatches {
           int activatedRound = ActivatableComponent.getComponentActivedRound(component);
           int currentRound = __instance.Combat.TurnDirector.CurrentRound;
           Log.Debug?.Write(" " + component.defId + " not active " + __instance.CurrentHeat + "/" + activatable.AutoActivateOnHeat + " oncePerRound:" + activatable.ActivateOncePerRound + " actRound:" + activatedRound + " currentRound:" + currentRound + "\n");
-          if (activatable.ActivateOncePerRound && (activatedRound == currentRound)) { return; }
+          if (activatable.ActivateOncePerRound && (activatedRound == currentRound)) { continue; }
           if (activatable.AutoActivateOnOverheatLevel <= CustomActivatableEquipment.Core.Epsilon) {
             if (activatable.AutoActivateOnHeat > Core.Epsilon) {
               if (__instance.CurrentHeat >= activatable.AutoActivateOnHeat) {
@@ -340,19 +342,14 @@ namespace CustomActivatablePatches {
 
 namespace CustomActivatableEquipment {
   public class Log {
-    //private static string m_assemblyFile;
-    private static string m_logfile;
-    private static StreamWriter m_fs = null;
-    private static readonly Mutex mutex = new Mutex();
+    private static readonly object pendingLock = new object();
+    private static readonly StringBuilder pending = new StringBuilder();
+    private static DeferringLogger logger;
+    private static bool failureReported;
     private static Log m_log = new Log();
     public static string BaseDirectory;
     public static void InitLog() {
-      //Log.m_assemblyFile = (new System.Uri(Assembly.GetExecutingAssembly().CodeBase)).AbsolutePath;
-      Log.m_logfile = Path.Combine(BaseDirectory, "ActivatableComponents.log");
-      //Log.m_logfile = Path.Combine(Log.m_logfile, "CustomAmmoCategories.log");
-      File.Delete(Log.m_logfile);
-      m_fs = new StreamWriter(m_logfile);
-      m_fs.AutoFlush = true;
+      logger = new DeferringLogger(BaseDirectory, "ActivatableComponents", "CAE", false, false);
     }
     public void W(string line, bool isCritical = false) {
       m_log.Write(line, isCritical);
@@ -369,19 +366,13 @@ namespace CustomActivatableEquipment {
       line = init + line; WL(line, isCritical);
     }
     public void TW(int initiation, string line, bool isCritical = false) {
-      string init = new string(' ', initiation);
-      line = "[" + DateTime.UtcNow.ToString("HH:mm:ss.fff") + "]" + init + line;
-      W(line, isCritical);
+      W(initiation, line, isCritical);
     }
     public void TWL(int initiation, string line, bool isCritical = false) {
-      string init = new string(' ', initiation);
-      line = "[" + DateTime.UtcNow.ToString("HH:mm:ss.fff") + "]" + init + line;
-      WL(line, isCritical);
+      WL(initiation, line, isCritical);
     }
     public void TWriteCritical(int initiation, string line) {
-      string init = new string(' ', initiation);
-      line = "[" + DateTime.UtcNow.ToString("HH:mm:ss.fff") + "]" + init + line;
-      WL(line, true);
+      WL(initiation, line, true);
     }
     public static Log Debug {
       get {
@@ -401,14 +392,27 @@ namespace CustomActivatableEquipment {
     }
     public void Write(string line, bool isCritical = false) {
       try {
-        if ((Core.Settings.debug) || (isCritical)) {
-          if (Log.mutex.WaitOne(1000)) {
-            m_fs.Write(line);
-            Log.mutex.ReleaseMutex();
+        if (logger == null || (!Core.Settings.debug && !isCritical)) {
+          return;
+        }
+        lock (pendingLock) {
+          pending.Append(line);
+          if (line.IndexOf('\n') < 0) {
+            return;
+          }
+          string text = pending.ToString();
+          int last = text.LastIndexOf('\n');
+          pending.Clear();
+          pending.Append(text, last + 1, text.Length - last - 1);
+          foreach (string complete in text.Substring(0, last).Split('\n')) {
+            logger.Info?.Write(complete);
           }
         }
-      } catch (Exception) {
-        //i'm sertanly don't know what to do
+      } catch (Exception e) {
+        if (!failureReported) {
+          failureReported = true;
+          UnityEngine.Debug.LogException(e);
+        }
       }
     }
   }
@@ -870,8 +874,9 @@ namespace CustomActivatableEquipment {
         Log.Debug?.WL(1,"always fail");
       }
       if (testRoll) { if (roll < chance) { return false; } else { return true; }; };
-      if (component.isAIRollPassed()) {
-        component.setAIRollPassed(false);
+      AIComponent aiComponent = new AIComponent(component);
+      if (aiComponent.NextRollForcedToPass) {
+        aiComponent.NextRollForcedToPass = false;
         if (roll >= 0f) { roll = chance + 0.1f; };
       }
       Log.Debug?.WL(1,$"roll:{roll}");
@@ -1108,6 +1113,11 @@ namespace CustomActivatableEquipment {
       FailChance += (activatable.FailPilotingBase - component.parent.SkillPiloting) * activatable.FailPilotingMult;
       if (FailChance < 0f) { FailChance = 0f; };
       return FailChance;
+    }
+    public static float getActivationFailChance(MechComponent component) {
+      ActivatableComponent activatable = component.componentDef.GetComponent<ActivatableComponent>();
+      if (activatable == null) { return 0f; }
+      return activatable.AlwaysFail ? 1f : getEffectiveComponentFailChance(component);
     }
     public static void setComponentFailChance(MechComponent component, float chance) {
       ActivatableComponent activatable = component.componentDef.GetComponent<ActivatableComponent>();

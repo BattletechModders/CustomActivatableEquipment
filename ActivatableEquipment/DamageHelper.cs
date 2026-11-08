@@ -193,11 +193,6 @@ namespace CustomActivatableEquipment.DamageHelpers {
       __instance.Combat.commitDamage();
     }
   }
-  public static class AbstractActor_OnActivationEnd_Patch {
-    public static void Prefix(AbstractActor __instance) {
-      DamageHelper.completedTurnFor(__instance);
-    }
-  }
   [HarmonyPatch(typeof(Mech), "AddExternalHeat")]
   public static class Mech_AddExternalHeat_Patch {
     private static void Postfix(Mech __instance, string reason, int amt) {

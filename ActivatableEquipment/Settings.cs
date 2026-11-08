@@ -55,12 +55,10 @@ namespace CustomActivatableEquipment {
   public class Settings {
     [GameplaySafe]
     public bool debug { get; set; }
-    public float AIComponentUsefullModifyer { get; set; }
-    public float AIComponentExtreamlyUsefulModifyer { get; set; }
     public float AIOffenceUsefullCoeff { get; set; }
     public float AIDefenceUsefullCoeff { get; set; }
-    public float AIHeatCoeffCoeff { get; set; }
-    public float AIOverheatCoeffCoeff { get; set; }
+    public float AIHeatCoeff { get; set; }
+    public float AIOverheatCoeff { get; set; }
     [GameplaySafe]
     public float ToolTipWarningFailChance { get; set; }
     [GameplaySafe]
@@ -74,6 +72,16 @@ namespace CustomActivatableEquipment {
     public float LegAbsenceStoodUpMod { get; set; }
     public List<string> AdditionalAssets { get; set; }
     public float AIActivatableCheating { get; set; }
+    public float AIScoreOn { get; set; }
+    public float AIScoreOff { get; set; }
+    public float AIScoreMaxRisk { get; set; }
+    public float AILastChanceBonus { get; set; }
+    public float AIHotPenalty { get; set; }
+    public string AINoSensorsModifierId { get; set; }
+    public string AIEcmJammedStat { get; set; }
+    public float AIStabilityRatio { get; set; }
+    public float AIOverheatProtectionOffHeat { get; set; }
+    public float AIOverheatProtectionOnHeat { get; set; }
     public AuraUpdateFix auraUpdateFix { get; set; }
     [GameplaySafe]
     public float auraUpdateMinTimeDelta { get; set; }
@@ -117,12 +125,10 @@ namespace CustomActivatableEquipment {
     public Settings() {
       debug = true;
       AdditionalAssets = new List<string>();
-      AIComponentUsefullModifyer = 0.4f;
-      AIComponentExtreamlyUsefulModifyer = 0.6f;
       AIOffenceUsefullCoeff = 0.2f;
       AIDefenceUsefullCoeff = 0.2f;
-      AIHeatCoeffCoeff = 0.9f;
-      AIOverheatCoeffCoeff = 0.8f;
+      AIHeatCoeff = 0.9f;
+      AIOverheatCoeff = 0.8f;
       ToolTipWarningFailChance = 0.2f;
       ToolTipAlertFailChance = 0.4f;
       StartupByHeatControl = false;
@@ -132,6 +138,16 @@ namespace CustomActivatableEquipment {
       DefaultArmsAbsenceStoodUpMod = -0.1f;
       LegAbsenceStoodUpMod = -0.1f;
       AIActivatableCheating = 0.8f;
+      AIScoreOn = 0.3f;
+      AIScoreOff = 0.15f;
+      AIScoreMaxRisk = 0.6f;
+      AILastChanceBonus = 0.2f;
+      AIHotPenalty = 0.2f;
+      AINoSensorsModifierId = "ATTACK_NO_SENSORS";
+      AIEcmJammedStat = "LV_ECM_JAMMED";
+      AIStabilityRatio = 0.7f;
+      AIOverheatProtectionOffHeat = 0.9f;
+      AIOverheatProtectionOnHeat = 0.5f;
       auraUpdateFix = AuraUpdateFix.None;
       auraUpdateMinTimeDelta = 1f;
       auraUpdateMinPosDelta = 20f;

@@ -523,7 +523,7 @@ namespace CustomActivatableEquipment {
           if(activeRounds < activeDef.FailRoundsStart) { return false; }
         }
       }
-      if (component.FailChance() < Core.Settings.equipmentFlashFailChance) { return false; }
+      if (ActivatableComponent.getActivationFailChance(component) < Core.Settings.equipmentFlashFailChance) { return false; }
       return true;
     }
     private bool background_flashing { get; set; }

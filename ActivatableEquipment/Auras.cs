@@ -212,13 +212,16 @@ namespace CustomActivatableEquipment {
       AbstractActorStealthPipsPrevious.SetValue(actor, val);
     }
     public static void FlushMovingAuraFloaties() {
+      CombatGameState combat = UnityGameInstance.BattleTechGame.Combat;
       foreach (var body in movingAddFloaties) {
+        if (body.Key.owner == null || body.Key.owner.Combat != combat) { continue; }
         foreach (var aura in body.Value) {
           body.Key.ShowAddFloatie(aura);
         }
       }
       movingAddFloaties.Clear();
       foreach (var body in movingRemoveFloaties) {
+        if (body.Key.owner == null || body.Key.owner.Combat != combat) { continue; }
         foreach (var aura in body.Value) {
           body.Key.ShowDelFloatie(aura);
         }
@@ -255,13 +258,17 @@ namespace CustomActivatableEquipment {
       foreach (AuraBubble aura in allAuras) {
         if (aura == null) { continue; }
         aura.affectedTo.Clear();
-        try { objToDestroy.Add(aura.gameObject); } finally { };
-        foreach (var bVFX in aura.bubblesVFX) {
-          if (bVFX.Key == null) { continue; }
-          try { objToDestroy.Add(bVFX.Key.gameObject); } finally { };
+        objToDestroy.Add(aura.gameObject);
+        if (aura.bubblesVFX != null) {
+          foreach (var bVFX in aura.bubblesVFX) {
+            if (bVFX.Key == null) { continue; }
+            objToDestroy.Add(bVFX.Key.gameObject);
+          }
+          aura.bubblesVFX.Clear();
         }
-        try { objToDestroy.Add(aura.reticle.gameObject); } finally { };
-        aura.bubblesVFX.Clear();
+        if (aura.reticle != null) {
+          objToDestroy.Add(aura.reticle.gameObject);
+        }
       }
       foreach (var body in actorAuraBodies) {
         if (body.Value == null) { continue; }
@@ -273,7 +280,12 @@ namespace CustomActivatableEquipment {
       actorAuraBodies.Clear();
       allAuras.Clear();
       actorsSensorsBubbles.Clear();
+      movingAddFloaties.Clear();
+      movingRemoveFloaties.Clear();
+      actorAuraBubbles.Clear();
+      skipStealthChange.Clear();
       foreach (GameObject obj in objToDestroy) {
+        if (obj == null) { continue; }
         GameObject.Destroy(obj);
       }
       objToDestroy.Clear();
@@ -545,7 +557,7 @@ namespace CustomActivatableEquipment {
           if (owner.Combat == null) {
             Log.Debug?.TWriteCritical(0, "This is really fucking shit. Combatant without Combat inited");
           } else {
-            if (owner.Combat.MessageCenter == null) {
+            if (owner.Combat.MessageCenter != null) {
               owner.Combat.MessageCenter.PublishMessage((MessageCenterMessage)new FloatieMessage(aura.owner.GUID, owner.GUID, new Text("{0} {1}", aura.Def.Name, action), nature));
             } else {
               Log.Debug?.TWriteCritical(0, "This is reall fucking shit. Combat without message center");
