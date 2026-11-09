@@ -5,7 +5,7 @@ namespace CustomActivatableEquipment.AI.Scores
 {
     internal class SiegeScore : AIScore
     {
-        public override string Tag => "cae_ai_siege";
+        public override AITrait Trait => AITrait.Siege;
 
         public override bool NeedsThreats => true;
 

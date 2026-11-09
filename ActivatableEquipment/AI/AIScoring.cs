@@ -1,7 +1,6 @@
 ﻿using BattleTech;
 using CustomActivatableEquipment.AI.Scores;
 using System;
-using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
 
@@ -23,23 +22,31 @@ namespace CustomActivatableEquipment.AI
             new AlwaysScore()
         };
 
-        public static readonly string[] PurposeTags = Scores.Select(score => score.Tag).ToArray();
-
-        public static bool NeedsThreats(HashSet<string> tags)
+        public static bool HasPurpose(AITrait traits)
         {
-            return Scores.Any(score => score.NeedsThreats && tags.Contains(score.Tag));
+            return Scores.Any(score => (traits & score.Trait) != 0);
         }
 
-        public static bool NeedsTargetsInRange(HashSet<string> tags)
+        public static bool NeedsThreats(AITrait traits)
         {
-            return Scores.Any(score => score.NeedsTargetsInRange && tags.Contains(score.Tag));
+            return Scores.Any(score => score.NeedsThreats && (traits & score.Trait) != 0);
+        }
+
+        public static bool NeedsTargetsInRange(AITrait traits)
+        {
+            return Scores.Any(score => score.NeedsTargetsInRange && (traits & score.Trait) != 0);
         }
 
         public static float Score(AISituation situation, AIComponent component, bool isActive)
         {
             float result = 0f;
-            foreach (AIScore score in Scores.Where(score => component.Info.Tags.Contains(score.Tag)))
+            foreach (AIScore score in Scores)
             {
+                if (!component.Info.Has(score.Trait))
+                {
+                    continue;
+                }
+
                 float value = score.Score(situation, component, isActive);
                 Log.Debug?.Write("  " + score.GetType().Name + ":" + value + "\n");
                 result = Math.Max(result, value);
@@ -86,13 +93,13 @@ namespace CustomActivatableEquipment.AI
                 return score;
             }
 
-            if (!situation.ActivationEnd && !component.Info.Tags.Contains("cae_ai_overheat_protection") && (!component.Activatable.CanActivateAfterMove || !component.Activatable.CanActivateAfterFire))
+            if (!situation.ActivationEnd && !component.Info.Has(AITrait.OverheatProtection) && (!component.Activatable.CanActivateAfterMove || !component.Activatable.CanActivateAfterFire))
             {
                 score += Core.Settings.AILastChanceBonus;
                 Log.Debug?.Write("  can't be switched after move / fire: last chance +" + Core.Settings.AILastChanceBonus + "\n");
             }
 
-            if (component.Info.Tags.Contains("cae_ai_heat") && situation.IsHot)
+            if (component.Info.Has(AITrait.Heat) && situation.IsHot)
             {
                 score -= Core.Settings.AIHotPenalty;
                 Log.Debug?.Write("  i'm hot: -" + Core.Settings.AIHotPenalty + "\n");

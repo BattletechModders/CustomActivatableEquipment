@@ -4,7 +4,7 @@ namespace CustomActivatableEquipment.AI.Scores
 {
     internal class CoolScore : AIScore
     {
-        public override string Tag => "cae_ai_cool";
+        public override AITrait Trait => AITrait.Cool;
 
         public override float Score(AISituation situation, AIComponent component, bool isActive)
         {

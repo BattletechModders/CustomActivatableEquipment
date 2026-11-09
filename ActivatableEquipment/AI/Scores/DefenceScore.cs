@@ -2,7 +2,7 @@
 {
     internal class DefenceScore : ThreatScore
     {
-        public override string Tag => "cae_ai_defence";
+        public override AITrait Trait => AITrait.Defence;
 
         protected override float UsefulValue => Core.Settings.AIDefenceUsefullCoeff;
 

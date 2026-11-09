@@ -5,7 +5,7 @@ namespace CustomActivatableEquipment.AI.Scores
 {
     internal class StabilityScore : AIScore
     {
-        public override string Tag => "cae_ai_stability";
+        public override AITrait Trait => AITrait.Stability;
 
         public override float Score(AISituation situation, AIComponent component, bool isActive)
         {

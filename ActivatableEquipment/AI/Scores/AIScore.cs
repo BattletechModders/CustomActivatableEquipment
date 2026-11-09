@@ -4,7 +4,7 @@ namespace CustomActivatableEquipment.AI.Scores
 {
     internal abstract class AIScore
     {
-        public abstract string Tag { get; }
+        public abstract AITrait Trait { get; }
 
         public virtual bool NeedsThreats => false;
 
