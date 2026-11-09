@@ -2,7 +2,7 @@
 {
     internal class SpeedScore : AIScore
     {
-        public override string Tag => "cae_ai_speed";
+        public override AITrait Trait => AITrait.Speed;
 
         public override bool NeedsThreats => true;
 

@@ -2,7 +2,7 @@
 {
     internal class AlwaysScore : AIScore
     {
-        public override string Tag => "cae_ai_always";
+        public override AITrait Trait => AITrait.Always;
 
         public override float Score(AISituation situation, AIComponent component, bool isActive)
         {

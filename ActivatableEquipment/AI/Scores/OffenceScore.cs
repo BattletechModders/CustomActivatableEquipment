@@ -2,7 +2,7 @@
 {
     internal class OffenceScore : ThreatScore
     {
-        public override string Tag => "cae_ai_offence";
+        public override AITrait Trait => AITrait.Offence;
 
         protected override float UsefulValue => Core.Settings.AIOffenceUsefullCoeff;
 

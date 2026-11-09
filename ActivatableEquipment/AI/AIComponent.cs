@@ -20,7 +20,7 @@ namespace CustomActivatableEquipment.AI
 
         internal class DefInfo
         {
-            public readonly HashSet<string> Tags;
+            private readonly AITrait Traits;
             public readonly bool HasPurpose;
             public readonly bool Controllable;
             public readonly bool NeedsThreats;
@@ -29,12 +29,17 @@ namespace CustomActivatableEquipment.AI
 
             public DefInfo(MechComponent component, ActivatableComponent activatable)
             {
-                Tags = new HashSet<string>(component.ComponentTags().Select(tag => tag.ToLowerInvariant()).Where(tag => tag.StartsWith("cae_ai_", StringComparison.Ordinal)));
-                HasPurpose = AIScoring.PurposeTags.Any(Tags.Contains);
+                Traits = AITraits.FromTags(component.ComponentTags());
+                HasPurpose = AIScoring.HasPurpose(Traits);
                 Controllable = activatable != null && activatable.CanBeactivatedManualy && (activatable.InjuryOnFail || HasPurpose);
-                NeedsThreats = AIScoring.NeedsThreats(Tags);
-                NeedsTargetsInRange = AIScoring.NeedsTargetsInRange(Tags);
-                NeedsSpawnCheck = activatable != null && activatable.ChargesCount > 0 && !Tags.Contains("cae_ai_speed");
+                NeedsThreats = AIScoring.NeedsThreats(Traits);
+                NeedsTargetsInRange = AIScoring.NeedsTargetsInRange(Traits);
+                NeedsSpawnCheck = activatable != null && activatable.ChargesCount > 0 && !Has(AITrait.Speed);
+            }
+
+            public bool Has(AITrait trait)
+            {
+                return (Traits & trait) != 0;
             }
         }
 
@@ -85,7 +90,7 @@ namespace CustomActivatableEquipment.AI
         {
             get
             {
-                if (Info.Tags.Contains("cae_ai_explode") && (Activatable.FailCrit || Activatable.FailCritComponents || Activatable.FailISDamage > Core.Epsilon || Activatable.ExplodeOnFail))
+                if (Info.Has(AITrait.Explode) &&(Activatable.FailCrit || Activatable.FailCritComponents || Activatable.FailISDamage > Core.Epsilon || Activatable.ExplodeOnFail))
                 {
                     return true;
                 }

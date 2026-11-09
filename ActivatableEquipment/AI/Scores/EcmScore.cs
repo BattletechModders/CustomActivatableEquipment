@@ -5,7 +5,7 @@ namespace CustomActivatableEquipment.AI.Scores
 {
     internal class EcmScore : AIScore
     {
-        public override string Tag => "cae_ai_ecm";
+        public override AITrait Trait => AITrait.Ecm;
 
         public override bool NeedsThreats => true;
 

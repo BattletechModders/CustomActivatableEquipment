@@ -2,7 +2,7 @@
 {
     internal class OverheatProtectionScore : AIScore
     {
-        public override string Tag => "cae_ai_overheat_protection";
+        public override AITrait Trait => AITrait.OverheatProtection;
 
         public override float Score(AISituation situation, AIComponent component, bool isActive)
         {

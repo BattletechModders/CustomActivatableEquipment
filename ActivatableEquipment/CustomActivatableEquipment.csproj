@@ -132,6 +132,7 @@
     <Compile Include="AI\AIPatches.cs" />
     <Compile Include="AI\AIScoring.cs" />
     <Compile Include="AI\AISituation.cs" />
+    <Compile Include="AI\AITrait.cs" />
     <Compile Include="AI\Scores\AIScore.cs" />
     <Compile Include="AI\Scores\AlwaysScore.cs" />
     <Compile Include="AI\Scores\CoolScore.cs" />

@@ -2,7 +2,7 @@
 {
     internal class SensorsScore : AIScore
     {
-        public override string Tag => "cae_ai_sensors";
+        public override AITrait Trait => AITrait.Sensors;
 
         public override bool NeedsThreats => true;
 
